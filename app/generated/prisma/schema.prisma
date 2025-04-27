@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String
+  isPro           Boolean           @default(false)
+  codeExecutions  CodeExecutions[]
+  snippetComments SnippetComments[]
+  stars           Stars[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model CodeExecutions {
+  id        String   @id @default(uuid())
+  userId    String
+  language  String
+  code      String?
+  output    String?
+  error     String?
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Snippets {
+  id              String            @id @default(uuid())
+  title           String
+  language        String
+  code            String?
+  userName        String
+  stars           Stars[]
+  snippetComments SnippetComments[]
+}
+
+model SnippetComments {
+  id        String   @id @default(uuid())
+  snippetId String
+  userId    String?
+  userName  String
+  content   String
+  user      User?    @relation(fields: [userId], references: [id])
+  snippets  Snippets @relation(fields: [snippetId], references: [id])
+}
+
+model Stars {
+  id        String   @id @default(uuid())
+  userId    String
+  snippetId String
+  user      User     @relation(fields: [userId], references: [id])
+  snippets  Snippets @relation(fields: [snippetId], references: [id])
+}

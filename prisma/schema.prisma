@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique // clerkId
+  email                  String   @unique
+  name                   String
+  codeExecutions CodeExecution[]
+  snippets       Snippet[]
+  comments       SnippetComment[]
+  stars          Star[]
+}
+
+model CodeExecution {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
+  language  String
+  code      String
+  output    String?
+  error     String?
+
+  createdAt DateTime @default(now())
+}
+
+model Snippet {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
+  title     String
+  language  String
+  code      String
+  userName  String // denormalized user name
+
+  comments  SnippetComment[]
+  stars     Star[]
+
+  createdAt DateTime @default(now())
+}
+
+model SnippetComment {
+  id        String   @id @default(uuid())
+  snippetId String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
+  userName  String
+  content   String // HTML
+
+  createdAt DateTime @default(now())
+}
+
+model Star {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId])
+  snippetId String
+  snippet   Snippet  @relation(fields: [snippetId], references: [id])
+
+  @@unique([userId, snippetId])
+}
+
+
+model file {
+  id        String   @id @default(uuid())
+  name      String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
